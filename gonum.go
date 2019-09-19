@@ -11,7 +11,7 @@ var (
     sc_schools map[string]string
     stats_sc   map[string]string
     infoLab    float64
-)
+) 
 func main() {
     mun_url = "http://educacao.dadosabertosbr.com/api/cidades/SC"
     stats_url = "http://educacao.dadosabertosbr.com/api/estatisticas?codMunicipio="
