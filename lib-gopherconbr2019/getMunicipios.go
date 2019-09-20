@@ -14,6 +14,7 @@ var (
     value      string
     infoLab    float64
     err        error
+    bytes      []byte
 )
 
 func GetMunicipios(bytes []byte) (sc_schools map[string]string) {

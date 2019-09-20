@@ -6,21 +6,28 @@ import (
     "net/http"
     "log"
     "io/ioutil"
+    "sync"
+    "fmt"
 )
 
-func GetData(url string) (bytes []byte) {
+func GetData(wg *sync.WaitGroup, c chan []byte, url string) {
     ctx, cancel := context.WithTimeout(context.Background(), time.Second * 30)
     defer cancel()
+    defer wg.Done()
 
     ans, err := http.NewRequest("GET", url, nil)
     if err != nil { log.Fatal("Request fail: %v", err) }
 
     ans = ans.WithContext(ctx)
-    resp, _ := http.DefaultClient.Do(ans)
+    resp, err := http.DefaultClient.Do(ans)
+    if err != nil {
+        fmt.Println("DefaultClient fail")
+        return
+    }
     defer resp.Body.Close()
 
     bytes, err = ioutil.ReadAll(resp.Body)
     if err != nil { log.Fatal("Request fail: %v", err) }
 
-    return
+    c <- bytes
 }

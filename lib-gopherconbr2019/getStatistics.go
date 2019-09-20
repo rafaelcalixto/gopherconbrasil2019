@@ -7,7 +7,7 @@ import (
     "strconv"
 )
 
-func GetStats(bytes []byte, getIt string) (float32) {
+func GetStats(bytes []byte, getIt string) (float64) {
 
     stats_sc = make(map[string]string)
 
