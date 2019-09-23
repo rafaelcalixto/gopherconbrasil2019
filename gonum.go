@@ -4,6 +4,10 @@ import (
     gcbr "lib-gopherconbr2019"
     "fmt"
     "sync"
+    "gonum.org/v1/gonum/stat"
+    "gonum.org/v1/gonum/plot"
+    "math"
+    "sort"
 )
 
 var (
@@ -15,7 +19,10 @@ var (
     infoLab    float64
     bytesChan  chan []byte
     api_ans    []byte
-    again      bool
+    mean       float64
+    median       float64
+    variance   float64
+    stddev     float64
     wg         sync.WaitGroup
 )
 func main() {
@@ -38,19 +45,28 @@ func main() {
         go gcbr.GetData(&wg, bytesChan, stats_url + k)
     }
     wg.Wait()
-    fmt.Print("calculating...")
-    var count int
-    count = 1
+    fmt.Println("calculating...")
 
     for {
-        api_ans, again = <- bytesChan
-        fmt.Println(count)
-        count++
-        if again {
+        api_ans = <- bytesChan
         stats_sc[info_type] = append(stats_sc[info_type],
                                      gcbr.GetStats(api_ans, info_type))
-        } else { break }
+        if len(bytesChan) == 0 { break }
     }
 
-    fmt.Println(stats_sc[info_type])
+    sort.Float64s(stats_sc[info_type])
+    mean = stat.Mean(stats_sc[info_type], nil)
+    median = stat.Quantile(0.5, stat.Empirical, stats_sc[info_type], nil)
+    variance = stat.Variance(stats_sc[info_type], nil)
+    stddev = math.Sqrt(variance)
+
+    fmt.Println("A média do ", info_type, "é: ", mean)
+    fmt.Println("A mediana do ", info_type, "é: ", median)
+    fmt.Println("A variança do ", info_type, "é: ", variance)
+    fmt.Println("A desvio padrão do ", info_type, "é: ", stddev)
+
+    goplot, err_plot := plot.New()
+    if err != nil { log.Fatal("Error while plotting", err_plot) }
+
+
 }
