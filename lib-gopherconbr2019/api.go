@@ -6,8 +6,8 @@ import (
 )
 
 // This is a simple package used just to call the API
-func main() {
+func API() {
     fmt.Println("starting the API...")
-    http.HandleFunc("/", api.Index_handler)
+    http.HandleFunc("/", Index_handler)
     http.ListenAndServe(":8000", nil)
 }

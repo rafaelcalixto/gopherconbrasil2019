@@ -5,7 +5,7 @@ import (
     "fmt"
     "sync"
     "gonum.org/v1/gonum/stat"
-    "gonum.org/v1/gonum/plot"
+    // "gonum.org/v1/plot"
     "math"
     "sort"
 )
@@ -65,8 +65,10 @@ func main() {
     fmt.Println("A variança do ", info_type, "é: ", variance)
     fmt.Println("A desvio padrão do ", info_type, "é: ", stddev)
 
-    goplot, err_plot := plot.New()
-    if err != nil { log.Fatal("Error while plotting", err_plot) }
+    gcbr.API()
+
+    // goplot, err_plot := plot.New()
+    // if err != nil { log.Fatal("Error while plotting", err_plot) }
 
 
 }
