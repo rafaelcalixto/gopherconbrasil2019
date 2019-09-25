@@ -7,7 +7,7 @@ import (
     "strconv"
 )
 
-func GetStats(bytes []byte, getIt string) (float64) {
+func GetStats(bytes []byte, getIt, ref string) (float64, string) {
 
     stats_sc = make(map[string]string)
 
@@ -24,5 +24,5 @@ func GetStats(bytes []byte, getIt string) (float64) {
     infoLab, err = strconv.ParseFloat(stats_sc[getIt], 64)
     if err != nil { log.Fatal("Regex fail: %v", err) }
 
-    return infoLab
+    return infoLab, stats_sc[ref]
 }

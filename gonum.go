@@ -4,10 +4,6 @@ import (
     gcbr "lib-gopherconbr2019"
     "fmt"
     "sync"
-    "gonum.org/v1/gonum/stat"
-    // "gonum.org/v1/plot"
-    "math"
-    "sort"
 )
 
 var (
@@ -15,14 +11,10 @@ var (
     stats_url  string
     info_type  string
     sc_schools map[string]string
-    stats_sc   map[string][]float64
+    stats_sc   map[string]float64
     infoLab    float64
     bytesChan  chan []byte
     api_ans    []byte
-    mean       float64
-    median       float64
-    variance   float64
-    stddev     float64
     wg         sync.WaitGroup
 )
 func main() {
@@ -37,8 +29,7 @@ func main() {
     api_ans = <- bytesChan
     sc_schools = gcbr.GetMunicipios(api_ans)
 
-    stats_sc = make(map[string][]float64)
-    info_type = "laboratorioInformatica"
+    stats_sc = make(map[string]float64)
     fmt.Print("loading data...")
     for k, _ := range sc_schools {
         wg.Add(1)
@@ -49,26 +40,10 @@ func main() {
 
     for {
         api_ans = <- bytesChan
-        stats_sc[info_type] = append(stats_sc[info_type],
-                                     gcbr.GetStats(api_ans, info_type))
+        st, ref := gcbr.GetStats(api_ans, "laboratorioInformatica", "nomeLocal")
+        stats_sc[ref] = st
+
         if len(bytesChan) == 0 { break }
     }
-
-    sort.Float64s(stats_sc[info_type])
-    mean = stat.Mean(stats_sc[info_type], nil)
-    median = stat.Quantile(0.5, stat.Empirical, stats_sc[info_type], nil)
-    variance = stat.Variance(stats_sc[info_type], nil)
-    stddev = math.Sqrt(variance)
-
-    fmt.Println("A média do ", info_type, "é: ", mean)
-    fmt.Println("A mediana do ", info_type, "é: ", median)
-    fmt.Println("A variança do ", info_type, "é: ", variance)
-    fmt.Println("A desvio padrão do ", info_type, "é: ", stddev)
-
-    gcbr.API()
-
-    // goplot, err_plot := plot.New()
-    // if err != nil { log.Fatal("Error while plotting", err_plot) }
-
-
+    gcbr.API(stats_sc)
 }
