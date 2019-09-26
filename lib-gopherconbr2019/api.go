@@ -10,6 +10,7 @@ import (
     "gonum.org/v1/plot"
     "gonum.org/v1/gonum/stat"
     "gonum.org/v1/plot/plotter"
+    "gonum.org/v1/plot/plotutil"
     "gonum.org/v1/plot/vg"
 )
 
@@ -62,6 +63,17 @@ func errorHandler(h func(http.ResponseWriter, *http.Request) error) http.Handler
     }
 }
 
+func barColors(pv plotter.Values, v float64, i int) (plotter.Values) {
+    for n := 0; n < 10; n++ {
+        if n == i {
+            pv[i] = v
+        } else {
+            pv[n] = 0
+        }
+    }
+    return pv
+}
+
 // This function returns a "Welcome message" to the API
 func (s *server) index(w http.ResponseWriter, r *http.Request) {
     enableCors(&w)
@@ -88,26 +100,30 @@ func (s *server) hist(w http.ResponseWriter, r *http.Request) error {
     s.RLock()
     defer s.RUnlock()
 
-    var values plotter.Values
-    values = make(plotter.Values, len(s.to_stats))
-    for i, v := range s.to_stats {
-        values[i] = v
-    }
-
     p, err := plot.New()
     if err != nil { return err }
 
-    hist, err := plotter.NewBarChart(values, vg.Points(20))
-    if err != nil { return err }
+    var pltv   plotter.Values
+    var hists  []plot.Plotter
+    pltv = make(plotter.Values, 10)
 
-    p.Add(hist)
+    for i, v := range s.to_stats[:10] {
+        pltv = barColors(pltv, v, i)
+        hist, err := plotter.NewBarChart(pltv, vg.Points(10))
+        if err != nil { return err }
+
+        hist.Color = plotutil.Color(i)
+        p.Legend.Add(s.to_labels[i], hist)
+        hists = append(hists, hist)
+    }
+    p.Add(hists...)
+    p.NominalX(s.to_labels[:10]...)
+    p.X.Tick.Label.Rotation = math.Pi / 3
+
     p.Title.Text = "Histograma da estatística escolar de SC"
     p.Y.Label.Text = "Lab de Info na Escola"
     p.X.Label.Text = "cidades"
-    for cid := range s.to_labels {
-        // p.Legend.Add(cid, hist)
-        fmt.Println(cid)
-    }
+    p.Legend.Top = true
 
     wt, err := p.WriterTo(512, 512, "png")
     if err != nil { return err }

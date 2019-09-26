@@ -21,7 +21,7 @@ func GetData(wg *sync.WaitGroup, c chan []byte, url string) {
     ans = ans.WithContext(ctx)
     resp, err := http.DefaultClient.Do(ans)
     if err != nil {
-        fmt.Println("DefaultClient fail")
+        fmt.Println("Falha ao tentar obter dados da URL:", url)
         return
     }
     defer resp.Body.Close()
